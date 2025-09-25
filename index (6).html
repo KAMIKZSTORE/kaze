@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Auto Connect</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="whatsapp-icon.png">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><img src="whatsapp-icon.png" alt="WhatsApp Icon"> WhatsApp Auto Connect</h1>
+            <p>Hubungkan WhatsApp Anda dengan sistem kami</p>
+        </header>
+
+        <main>
+            <div class="card" id="connection-card">
+                <h2>Hubungkan WhatsApp</h2>
+                <div class="form-group">
+                    <label for="phone-number">Nomor Telepon (dengan kode negara)</label>
+                    <input type="tel" id="phone-number" placeholder="Contoh: +6281234567890" required>
+                    <small>Format: +[kode negara][nomor telepon]</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="device-name">Nama Perangkat (Opsional)</label>
+                    <input type="text" id="device-name" placeholder="Contoh: HP Utama, Laptop Kerja">
+                </div>
+                
+                <button id="connect-btn" class="btn-primary">Mulai Hubungkan</button>
+            </div>
+
+            <div class="card hidden" id="verification-card">
+                <h2>Verifikasi Koneksi</h2>
+                <div class="verification-info">
+                    <p>Kode verifikasi telah dikirim ke WhatsApp Anda:</p>
+                    <div class="phone-display" id="verification-phone"></div>
+                    <div class="verification-code" id="verification-code"></div>
+                    <p>Silakan balas pesan dengan kode di atas untuk menyelesaikan proses verifikasi.</p>
+                </div>
+                
+                <div class="timer">
+                    <p>Kode berlaku selama: <span id="countdown">05:00</span></p>
+                </div>
+                
+                <div class="actions">
+                    <button id="resend-btn" class="btn-secondary" disabled>Kirim Ulang Kode (60s)</button>
+                    <button id="cancel-btn" class="btn-danger">Batalkan</button>
+                </div>
+            </div>
+
+            <div class="card hidden" id="success-card">
+                <h2>Koneksi Berhasil!</h2>
+                <div class="success-icon">✓</div>
+                <p>WhatsApp Anda telah terhubung dengan sistem.</p>
+                <div class="connection-details">
+                    <p><strong>Nomor Telepon:</strong> <span id="connected-phone"></span></p>
+                    <p><strong>Perangkat:</strong> <span id="connected-device"></span></p>
+                    <p><strong>Kode Perangkat:</strong> <span id="device-code"></span></p>
+                    <p><strong>Terhubung sejak:</strong> <span id="connection-time"></span></p>
+                </div>
+                <button id="new-connection-btn" class="btn-primary">Hubungkan Perangkat Lain</button>
+            </div>
+
+            <div class="card hidden" id="error-card">
+                <h2>Terjadi Kesalahan</h2>
+                <div class="error-icon">⚠️</div>
+                <p id="error-message">Kode verifikasi tidak valid atau telah kedaluwarsa.</p>
+                <button id="retry-btn" class="btn-primary">Coba Lagi</button>
+            </div>
+        </main>
+
+        <section class="connected-devices hidden" id="devices-section">
+            <h2>Perangkat Tertaut</h2>
+            <div id="devices-list" class="devices-list">
+                <!-- Daftar perangkat akan ditampilkan di sini -->
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2023 WhatsApp Auto Connect System. Hak Cipta Dilindungi.</p>
+        </footer>
+    </div>
+
+    <script src="whatsapp-service.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
