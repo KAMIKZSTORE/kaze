@@ -3,472 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pterodactyl Panel Creator - Real API</title>
+    <title>Pterodactyl Panel Manager</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        
-        .container { padding-top: 50px; padding-bottom: 50px; }
-        
-        .card {
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.98);
-        }
-        
-        .card-header {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 20px 20px 0 0 !important;
-            padding: 30px;
-            border: none;
-        }
-        
-        .card-header h2 {
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0f1e;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .glass-card {
+            background: rgba(18, 25, 40, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .gradient-header {
+            background: linear-gradient(145deg, #1a2335, #0f172a);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .gradient-header h2 {
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             font-weight: 700;
-            font-size: 28px;
+            font-size: 2rem;
+            margin: 0;
         }
-        
-        .card-body { padding: 35px; }
-        
-        .form-label {
-            font-weight: 600;
-            color: #444;
-            margin-bottom: 8px;
-        }
-        
+
         .form-control, .form-select {
-            border: 2px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 12px 15px;
-            transition: all 0.3s;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 14px;
+            color: #f1f5f9;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
         }
-        
+
         .form-control:focus, .form-select:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            background: #1e293b;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            color: #f1f5f9;
         }
-        
-        .input-group-text {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 12px 0 0 12px;
-            padding: 12px 15px;
+
+        .form-control::placeholder {
+            color: #64748b;
+            opacity: 0.8;
         }
-        
-        .btn-create {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            padding: 15px 30px;
+
+        .form-label {
+            color: #94a3b8;
             font-weight: 600;
-            font-size: 18px;
-            transition: all 0.3s;
-            width: 100%;
-            margin-top: 25px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
         }
-        
-        .btn-create:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+
+        .input-group-text {
+            background: #2d3b4f;
+            border: 2px solid #334155;
+            border-right: none;
+            border-radius: 14px 0 0 14px;
+            color: #94a3b8;
+            padding: 12px 18px;
+        }
+
+        .input-group > .form-control {
+            border-left: none;
+            border-radius: 0 14px 14px 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+            border-radius: 14px;
+            padding: 14px 28px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
             color: white;
+            width: 100%;
+            margin-top: 1.5rem;
         }
-        
-        .btn-create:disabled {
-            opacity: 0.7;
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 30px -10px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
         }
-        
-        .badge-ram {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 8px 18px;
-            border-radius: 25px;
-            font-weight: 500;
+
+        .btn-outline-secondary {
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 14px;
+            color: #94a3b8;
+            padding: 12px 20px;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-secondary:hover {
+            background: #2d3b4f;
+            border-color: #3b82f6;
+            color: #f1f5f9;
+        }
+
+        .ram-badge {
+            background: #1e293b;
+            border: 2px solid #334155;
+            color: #94a3b8;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid transparent;
+            transition: all 0.2s;
         }
-        
-        .badge-ram:hover {
+
+        .ram-badge:hover, .ram-badge.selected {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-color: transparent;
+            color: white;
             transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
-        
-        .badge-ram.selected {
-            border: 2px solid #fff;
-            box-shadow: 0 0 0 2px #667eea;
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
-        
-        .info-box {
-            background: linear-gradient(135deg, #f5f7ff 0%, #f0f3ff 100%);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            border-left: 5px solid #667eea;
+
+        .status-connected {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
         }
-        
-        .info-box p {
-            margin-bottom: 8px;
-            font-size: 14px;
-            word-break: break-all;
+
+        .status-disconnected {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
-        
-        .info-box strong {
-            color: #667eea;
+
+        .status-checking {
+            background: rgba(234, 179, 8, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(234, 179, 8, 0.3);
         }
-        
-        .result-container {
-            margin-top: 30px;
-            padding: 25px;
-            background: linear-gradient(135deg, #f5f7ff 0%, #e8ecff 100%);
-            border-radius: 15px;
-            border: 2px solid #667eea;
+
+        .result-card {
+            background: #1a2335;
+            border: 2px solid #334155;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-top: 2rem;
             display: none;
             position: relative;
         }
-        
-        .result-container.show {
+
+        .result-card.show {
             display: block;
-            animation: slideIn 0.5s ease;
+            animation: slideIn 0.3s ease;
         }
-        
+
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(-20px);
+                transform: translateY(-10px);
             }
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
-        .copy-btn {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            background: white;
-            border: 2px solid #667eea;
-            color: #667eea;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .copy-btn:hover {
-            background: #667eea;
-            color: white;
-            transform: scale(1.1);
-        }
-        
-        .password-strength {
-            height: 5px;
-            border-radius: 5px;
-            margin-top: 8px;
-            transition: all 0.3s;
-        }
-        
-        .strength-weak { background: #dc3545; width: 25%; }
-        .strength-medium { background: #ffc107; width: 50%; }
-        .strength-strong { background: #28a745; width: 75%; }
-        .strength-very-strong { background: #20c997; width: 100%; }
-        
-        .server-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        
+
         .server-item {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border: 2px solid #e0e0e0;
-            transition: all 0.3s;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
             cursor: pointer;
+            transition: all 0.2s;
         }
-        
+
         .server-item:hover {
-            border-color: #667eea;
+            border-color: #3b82f6;
+            background: #2d3b4f;
             transform: translateX(5px);
         }
-        
-        .server-item.selected {
-            border-color: #667eea;
-            background: #f0f3ff;
-        }
-        
-        .modal-content {
-            border-radius: 20px;
-            border: none;
-        }
-        
-        .modal-header {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 20px 20px 0 0;
-            border: none;
-        }
-        
-        .modal-footer {
-            border-top: 2px solid #e0e0e0;
-        }
-        
+
         .log-container {
-            background: #1e1e2f;
-            color: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            font-family: monospace;
-            height: 300px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 16px;
+            padding: 1.2rem;
+            height: 350px;
             overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
         }
-        
+
         .log-entry {
-            margin: 5px 0;
-            padding: 5px;
-            border-bottom: 1px solid #333;
+            padding: 0.5rem;
+            border-bottom: 1px solid #334155;
+            color: #94a3b8;
         }
-        
-        .log-success { color: #28a745; }
-        .log-error { color: #dc3545; }
-        .log-info { color: #17a2b8; }
-        .log-warning { color: #ffc107; }
+
+        .log-success { color: #4ade80; }
+        .log-error { color: #f87171; }
+        .log-info { color: #60a5fa; }
+        .log-warning { color: #fbbf24; }
+
+        .nav-pills .nav-link {
+            background: #1e293b;
+            color: #94a3b8;
+            border: 2px solid #334155;
+            border-radius: 40px;
+            padding: 10px 20px;
+            margin-right: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .nav-pills .nav-link:hover {
+            background: #2d3b4f;
+            border-color: #3b82f6;
+        }
+
+        .nav-pills .nav-link.active {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-color: transparent;
+            color: white;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 40px;
+            color: #94a3b8;
+            padding: 8px 16px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #2d3b4f;
+            border-color: #3b82f6;
+            color: #f1f5f9;
+        }
+
+        /* Hidden API Info - This is the key part */
+        .hidden-api-info {
+            display: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container py-5">
         <div class="row justify-content-center">
-            <div class="col-md-10 col-lg-8">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h2><i class="bi bi-droplet me-2"></i>Pterodactyl Panel Creator</h2>
-                        <p class="mb-0 opacity-75">Real API Integration - Create Actual Panels</p>
+            <div class="col-lg-10">
+                <!-- Header -->
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold" style="background: linear-gradient(135deg, #60a5fa, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        <i class="bi bi-droplet me-3"></i>Pterodactyl Panel Manager
+                    </h1>
+                    <p class="text-secondary-emphasis">Manage your Pterodactyl panels with ease</p>
+                </div>
+
+                <!-- Hidden API Configuration - TIDAK TAMPIL DI UI -->
+                <div class="hidden-api-info" id="hiddenApiConfig">
+                    <!-- API keys tersembunyi di sini, tidak akan muncul di tampilan -->
+                </div>
+
+                <!-- Main Card -->
+                <div class="glass-card">
+                    <div class="gradient-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2><i class="bi bi-grid-3x3-gap-fill me-2"></i>Dashboard</h2>
+                            <span class="status-badge status-checking" id="connectionStatus">
+                                <i class="bi bi-wifi me-1"></i>Checking Connection...
+                            </span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <!-- Connection Status -->
-                        <div id="connectionStatus" class="info-box">
-                            <div class="d-flex align-items-center">
-                                <div class="spinner-grow spinner-grow-sm text-primary me-2" role="status" id="statusSpinner">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <span id="statusText">Checking API connection...</span>
-                            </div>
-                        </div>
 
-                        <!-- API Info -->
-                        <div class="info-box">
-                            <h6 class="mb-3"><i class="bi bi-info-circle me-2"></i>API Configuration</h6>
-                            <p><i class="bi bi-hdd-stack me-2"></i>Domain: <strong>https://nayoffc.my.id</strong></p>
-                            <p><i class="bi bi-shield-lock me-2"></i>API Key: <strong>ptla_A</strong></p>
-                            <p><i class="bi bi-key me-2"></i>Client API: <strong>ptlc_n</strong></p>
-                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="testConnection()">
-                                <i class="bi bi-arrow-repeat me-1"></i>Test Connection
-                            </button>
-                        </div>
-
-                        <!-- Tabs -->
-                        <ul class="nav nav-pills mb-4" id="pills-tab" role="tablist">
+                    <div class="p-4">
+                        <!-- Navigation Tabs -->
+                        <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="pills-create-tab" data-bs-toggle="pill" data-bs-target="#pills-create" type="button" role="tab">
+                                <button class="nav-link active" id="create-tab" data-bs-toggle="pill" data-bs-target="#create" type="button">
                                     <i class="bi bi-plus-circle me-2"></i>Create Panel
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-servers-tab" data-bs-toggle="pill" data-bs-target="#pills-servers" type="button" role="tab">
-                                    <i class="bi bi-server me-2"></i>List Servers
+                                <button class="nav-link" id="servers-tab" data-bs-toggle="pill" data-bs-target="#servers" type="button" onclick="loadServers()">
+                                    <i class="bi bi-server me-2"></i>Servers
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users" type="button" role="tab">
-                                    <i class="bi bi-people me-2"></i>List Users
+                                <button class="nav-link" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" onclick="loadUsers()">
+                                    <i class="bi bi-people me-2"></i>Users
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="pills-logs-tab" data-bs-toggle="pill" data-bs-target="#pills-logs" type="button" role="tab">
+                                <button class="nav-link" id="logs-tab" data-bs-toggle="pill" data-bs-target="#logs" type="button">
                                     <i class="bi bi-journal-text me-2"></i>Activity Logs
                                 </button>
                             </li>
                         </ul>
 
                         <!-- Tab Content -->
-                        <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-content">
                             <!-- Create Panel Tab -->
-                            <div class="tab-pane fade show active" id="pills-create" role="tabpanel">
+                            <div class="tab-pane fade show active" id="create" role="tabpanel">
                                 <form id="createPanelForm">
-                                    <div class="mb-4">
-                                        <label class="form-label"><i class="bi bi-pencil-square me-2"></i>Panel Name</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-droplet"></i></span>
-                                            <input type="text" class="form-control" id="panelName" placeholder="Enter panel name" required>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label"><i class="bi bi-memory me-2"></i>RAM Allocation (MB)</label>
-                                        <div class="d-flex gap-2 flex-wrap mb-2">
-                                            <span class="badge-ram" onclick="selectRAM(1024)">1 GB</span>
-                                            <span class="badge-ram" onclick="selectRAM(2048)">2 GB</span>
-                                            <span class="badge-ram" onclick="selectRAM(4096)">4 GB</span>
-                                            <span class="badge-ram" onclick="selectRAM(8192)">8 GB</span>
-                                            <span class="badge-ram" onclick="selectRAM(16384)">16 GB</span>
-                                        </div>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-memory"></i></span>
-                                            <input type="number" class="form-control" id="ram" value="1024" min="512" max="65536" step="512" required>
-                                        </div>
-                                        <small class="text-muted">Min: 512 MB, Max: 65536 MB</small>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label"><i class="bi bi-person-badge me-2"></i>User Type</label>
-                                        <select class="form-select" id="userType" required>
-                                            <option value="user">Regular User</option>
-                                            <option value="admin">Administrator</option>
-                                        </select>
-                                    </div>
-                                    
                                     <div class="row">
                                         <div class="col-md-6 mb-4">
-                                            <label class="form-label"><i class="bi bi-person me-2"></i>Username</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                                <input type="text" class="form-control" id="username" placeholder="Username" required>
-                                            </div>
+                                            <label class="form-label">
+                                                <i class="bi bi-pencil-square me-2"></i>Panel Name
+                                            </label>
+                                            <input type="text" class="form-control" id="panelName" placeholder="Enter panel name" required>
                                         </div>
-                                        
+
                                         <div class="col-md-6 mb-4">
-                                            <label class="form-label"><i class="bi bi-envelope me-2"></i>Email</label>
+                                            <label class="form-label">
+                                                <i class="bi bi-person me-2"></i>Username
+                                            </label>
+                                            <input type="text" class="form-control" id="username" placeholder="Enter username" required>
+                                        </div>
+
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">
+                                                <i class="bi bi-envelope me-2"></i>Email
+                                            </label>
+                                            <input type="email" class="form-control" id="email" placeholder="Enter email" required>
+                                        </div>
+
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">
+                                                <i class="bi bi-person-badge me-2"></i>User Type
+                                            </label>
+                                            <select class="form-select" id="userType" required>
+                                                <option value="user">Regular User</option>
+                                                <option value="admin">Administrator</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="col-12 mb-4">
+                                            <label class="form-label">
+                                                <i class="bi bi-lock me-2"></i>Password
+                                            </label>
                                             <div class="input-group">
-                                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                                                <input type="email" class="form-control" id="email" placeholder="Email" required>
+                                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                                <input type="password" class="form-control" id="password" placeholder="Enter password" required>
+                                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary" type="button" onclick="generatePassword()">
+                                                    <i class="bi bi-shuffle"></i>
+                                                </button>
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label"><i class="bi bi-lock me-2"></i>Password</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                            <input type="password" class="form-control" id="password" placeholder="Enter password" required>
-                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
-                                                <i class="bi bi-eye" id="toggleIcon"></i>
-                                            </button>
-                                            <button class="btn btn-outline-primary" type="button" onclick="generatePassword()">
-                                                <i class="bi bi-shuffle"></i>
-                                            </button>
+
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">
+                                                <i class="bi bi-memory me-2"></i>RAM (MB)
+                                            </label>
+                                            <div class="d-flex gap-2 flex-wrap mb-3">
+                                                <span class="ram-badge" onclick="selectRAM(1024)">1 GB</span>
+                                                <span class="ram-badge" onclick="selectRAM(2048)">2 GB</span>
+                                                <span class="ram-badge" onclick="selectRAM(4096)">4 GB</span>
+                                                <span class="ram-badge" onclick="selectRAM(8192)">8 GB</span>
+                                                <span class="ram-badge" onclick="selectRAM(16384)">16 GB</span>
+                                            </div>
+                                            <input type="number" class="form-control" id="ram" value="1024" min="512" max="65536" step="512">
                                         </div>
-                                        <div class="password-strength" id="passwordStrength"></div>
-                                        <small class="text-muted">Password must be at least 8 characters</small>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label"><i class="bi bi-hdd-stack me-2"></i>Allocation (Optional)</label>
-                                        <select class="form-select" id="allocation">
-                                            <option value="">Auto Allocation</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="mb-4">
-                                        <label class="form-label"><i class="bi bi-diagram-3 me-2"></i>Nest & Egg</label>
-                                        <div class="row">
-                                            <div class="col-md-6 mb-2">
-                                                <select class="form-select" id="nest">
-                                                    <option value="">Loading nests...</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-6 mb-2">
-                                                <select class="form-select" id="egg">
-                                                    <option value="">Select egg</option>
-                                                </select>
-                                            </div>
+
+                                        <div class="col-md-6 mb-4">
+                                            <label class="form-label">
+                                                <i class="bi bi-diagram-3 me-2"></i>Nest & Egg
+                                            </label>
+                                            <select class="form-select mb-2" id="nest" onchange="loadEggs()">
+                                                <option value="">Select Nest</option>
+                                            </select>
+                                            <select class="form-select" id="egg">
+                                                <option value="">Select Egg</option>
+                                            </select>
                                         </div>
                                     </div>
-                                    
-                                    <button type="submit" class="btn-create" id="createBtn">
+
+                                    <button type="submit" class="btn-primary" id="createBtn">
                                         <span class="spinner-border spinner-border-sm d-none" id="createSpinner"></span>
                                         <span id="createBtnText">Create Panel <i class="bi bi-arrow-right ms-2"></i></span>
                                     </button>
                                 </form>
+
+                                <!-- Result Container -->
+                                <div class="result-card" id="resultContainer">
+                                    <button class="copy-btn" onclick="copyResult()">
+                                        <i class="bi bi-clipboard me-1"></i>Copy
+                                    </button>
+                                    <h5 class="mb-4"><i class="bi bi-check-circle-fill text-success me-2"></i>Panel Created Successfully!</h5>
+                                    <div id="resultDetails" class="mb-3"></div>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="viewCreatedServer()">
+                                        <i class="bi bi-eye me-1"></i>View Server Details
+                                    </button>
+                                </div>
                             </div>
-                            
-                            <!-- Servers List Tab -->
-                            <div class="tab-pane fade" id="pills-servers" role="tabpanel">
-                                <div class="d-flex justify-content-between mb-3">
-                                    <h5><i class="bi bi-server me-2"></i>Server List</h5>
-                                    <button class="btn btn-sm btn-primary" onclick="loadServers()">
+
+                            <!-- Servers Tab -->
+                            <div class="tab-pane fade" id="servers" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0"><i class="bi bi-server me-2"></i>Server List</h5>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="loadServers()">
                                         <i class="bi bi-arrow-repeat me-1"></i>Refresh
                                     </button>
                                 </div>
                                 <div id="serversList" class="server-list">
-                                    <div class="text-center text-muted py-5">
+                                    <div class="text-center text-secondary py-5">
                                         <i class="bi bi-arrow-repeat spin me-2"></i>Loading servers...
                                     </div>
                                 </div>
                             </div>
-                            
-                            <!-- Users List Tab -->
-                            <div class="tab-pane fade" id="pills-users" role="tabpanel">
-                                <div class="d-flex justify-content-between mb-3">
-                                    <h5><i class="bi bi-people me-2"></i>User List</h5>
-                                    <button class="btn btn-sm btn-primary" onclick="loadUsers()">
+
+                            <!-- Users Tab -->
+                            <div class="tab-pane fade" id="users" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0"><i class="bi bi-people me-2"></i>User List</h5>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="loadUsers()">
                                         <i class="bi bi-arrow-repeat me-1"></i>Refresh
                                     </button>
                                 </div>
                                 <div id="usersList" class="server-list">
-                                    <div class="text-center text-muted py-5">
+                                    <div class="text-center text-secondary py-5">
                                         <i class="bi bi-arrow-repeat spin me-2"></i>Loading users...
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Logs Tab -->
-                            <div class="tab-pane fade" id="pills-logs" role="tabpanel">
-                                <div class="d-flex justify-content-between mb-3">
-                                    <h5><i class="bi bi-journal-text me-2"></i>Activity Logs</h5>
-                                    <button class="btn btn-sm btn-danger" onclick="clearLogs()">
+                            <div class="tab-pane fade" id="logs" role="tabpanel">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0"><i class="bi bi-journal-text me-2"></i>Activity Logs</h5>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="clearLogs()">
                                         <i class="bi bi-trash me-1"></i>Clear
                                     </button>
                                 </div>
-                                <div id="logContainer" class="log-container">
+                                <div class="log-container" id="logContainer">
                                     <!-- Logs will appear here -->
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Result Container -->
-                        <div class="result-container" id="resultContainer">
-                            <button class="copy-btn" onclick="copyResult()">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                            <h5 class="mb-3"><i class="bi bi-check-circle text-success me-2"></i>Panel Created Successfully!</h5>
-                            <div id="resultDetails" class="mb-3"></div>
-                            <button class="btn btn-sm btn-primary" onclick="viewServerDetails()">
-                                <i class="bi bi-eye me-1"></i>View Server Details
-                            </button>
-                        </div>
                     </div>
                 </div>
-                
+
                 <!-- Footer -->
-                <div class="text-center mt-4 text-white">
-                    <p class="mb-0"><i class="bi bi-droplet me-2"></i>Pterodactyl Panel Creator v2.0 - Real API Integration</p>
-                    <small>Powered by nayoffc.my.id | API Status: <span id="apiStatus" class="badge bg-warning">Checking</span></small>
+                <div class="text-center mt-4 text-secondary">
+                    <small>© 2024 Pterodactyl Panel Manager. All rights reserved.</small>
                 </div>
             </div>
         </div>
@@ -477,19 +509,19 @@
     <!-- Server Details Modal -->
     <div class="modal fade" id="serverModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content" style="background: #1a2335; border: 2px solid #334155;">
+                <div class="modal-header" style="border-bottom: 2px solid #334155;">
                     <h5 class="modal-title"><i class="bi bi-server me-2"></i>Server Details</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body" id="serverModalBody">
                     Loading...
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="startServer()">Start Server</button>
-                    <button type="button" class="btn btn-warning" onclick="restartServer()">Restart</button>
-                    <button type="button" class="btn btn-danger" onclick="stopServer()">Stop</button>
+                <div class="modal-footer" style="border-top: 2px solid #334155;">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="controlServer('start')">Start</button>
+                    <button type="button" class="btn btn-warning" onclick="controlServer('restart')">Restart</button>
+                    <button type="button" class="btn btn-danger" onclick="controlServer('stop')">Stop</button>
                 </div>
             </div>
         </div>
