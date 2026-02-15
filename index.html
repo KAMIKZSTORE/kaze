@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KAZE ID - Professional Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        :root {
+            --primary: #00f0ff;
+            --secondary: #ff00ff;
+            --accent: #7000ff;
+            --dark: #0a0a0f;
+            --darker: #050508;
+            --card-bg: rgba(20, 20, 35, 0.6);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--darker);
+            color: #fff;
+            overflow-x: hidden;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+        
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(ellipse at 20% 80%, rgba(112, 0, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(0, 240, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 40% 40%, rgba(255, 0, 255, 0.08) 0%, transparent 40%),
+                var(--darker);
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,0.3), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(0,240,255,0.3), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(255,0,255,0.3), transparent),
+                radial-gradient(2px 2px at 160px 120px, rgba(255,255,255,0.2), transparent),
+                radial-gradient(1px 1px at 230px 80px, rgba(0,240,255,0.2), transparent);
+            background-size: 250px 250px;
+            animation: twinkle 5s ease-in-out infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Header */
+        .header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(5,5,8,0.95), transparent);
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .brand-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #7000ff, #00f0ff);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 20px rgba(112, 0, 255, 0.5);
+        }
+        .brand-text h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .brand-text span {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .notification-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .notification-btn i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+        .notif-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: linear-gradient(135deg, #ff00ff, #7000ff);
+            color: #fff;
+            font-size: 10px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            overflow: hidden;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Saldo Card */
+        .saldo-section {
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+        .saldo-card {
+            background: linear-gradient(135deg, rgba(112, 0, 255, 0.2), rgba(0, 240, 255, 0.1));
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .saldo-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,240,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        .saldo-label {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .saldo-amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 20px rgba(0,240,255,0.5);
+        }
+        .saldo-bonus {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.05);
+            padding: 10px 15px;
+            border-radius: 12px;
+            position: relative;
+            z-index: 1;
+        }
+        .saldo-bonus i {
+            color: #ff00ff;
+            font-size: 18px;
+        }
+        .saldo-bonus-text {
+            flex: 1;
+            font-size: 13px;
+            color: #ccc;
+        }
+        .saldo-bonus-arrow {
+            color: var(--primary);
+        }
+        
+        /* Section Title */
+        .section-title {
+            padding: 0 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-title h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .section-title .see-all {
+            font-size: 13px;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* Produk Populer - Horizontal Scroll */
+        .produk-populer {
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+        .produk-scroll {
+            display: flex;
+            gap: 15px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scrollbar-width: none;
+        }
+        .produk-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .produk-card {
+            min-width: 160px;
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .produk-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .produk-card:hover::before,
+        .produk-card.active::before {
+            opacity: 1;
+        }
+        .produk-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0,240,255,0.3);
+            box-shadow: 0 10px 30px rgba(0,240,255,0.1);
+        }
+        .produk-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            font-size: 24px;
+            position: relative;
+        }
+        .produk-icon::after {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 14px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0.5;
+        }
+        .produk-icon.purple {
+            background: linear-gradient(135deg, rgba(112,0,255,0.3), rgba(112,0,255,0.1));
+            color: #a855f7;
+        }
+        .produk-icon.orange {
+            background: linear-gradient(135deg, rgba(255,140,0,0.3), rgba(255,140,0,0.1));
+            color: #fb923c;
+        }
+        .produk-icon.cyan {
+            background: linear-gradient(135deg, rgba(0,240,255,0.3), rgba(0,240,255,0.1));
+            color: #22d3ee;
+        }
+        .produk-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .produk-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .produk-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .produk-status.ready {
+            color: #4ade80;
+        }
+        .produk-status.maintenance {
+            color: #fb923c;
+        }
+        .produk-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        
+        /* Kategori Produk */
+        .kategori-section {
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+        .kategori-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .kategori-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .kategori-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .kategori-card:hover::before {
+            opacity: 1;
+        }
+        .kategori-card:hover {
+            transform: translateX(5px);
+            border-color: rgba(0,240,255,0.2);
+        }
+        .kategori-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .kategori-icon.blue {
+            background: linear-gradient(135deg, rgba(59,130,246,0.3), rgba(59,130,246,0.1));
+            color: #60a5fa;
+            box-shadow: 0 0 20px rgba(59,130,246,0.3);
+        }
+        .kategori-icon.purple {
+            background: linear-gradient(135deg, rgba(168,85,247,0.3), rgba(168,85,247,0.1));
+            color: #c084fc;
+            box-shadow: 0 0 20px rgba(168,85,247,0.3);
+        }
+        .kategori-icon.cyan {
+            background: linear-gradient(135deg, rgba(6,182,212,0.3), rgba(6,182,212,0.1));
+            color: #67e8f9;
+            box-shadow: 0 0 20px rgba(6,182,212,0.3);
+        }
+        .kategori-icon.pink {
+            background: linear-gradient(135deg, rgba(236,72,153,0.3), rgba(236,72,153,0.1));
+            color: #f9a8d4;
+            box-shadow: 0 0 20px rgba(236,72,153,0.3);
+        }
+        .kategori-info {
+            flex: 1;
+        }
+        .kategori-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        .kategori-count {
+            font-size: 12px;
+            color: #888;
+        }
+        .kategori-arrow {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10,10,15,0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 10px 20px 25px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1000;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            padding: 8px 15px;
+            border-radius: 12px;
+            transition: all 0.3s;
+            color: #666;
+            position: relative;
+        }
+        .nav-item i {
+            font-size: 22px;
+            transition: all 0.3s;
+        }
+        .nav-item span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .nav-item.active {
+            color: var(--primary);
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            opacity: 0.2;
+            filter: blur(15px);
+        }
+        .nav-item.center {
+            margin-top: -25px;
+        }
+        .nav-item.center .nav-icon-box {
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0,240,255,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        .nav-item.center i {
+            color: #000;
+            font-size: 24px;
+        }
+        
+        /* Login Container */
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        .login-container.hidden {
+            display: none;
+        }
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 0 40px rgba(0,240,255,0.3);
+        }
+        .login-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .login-subtitle {
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .social-login {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .btn-social {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .btn-social:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        .btn-social.google:hover {
+            border-color: #ea4335;
+        }
+        .btn-social.github:hover {
+            border-color: #fff;
+        }
+        
+        /* Utilities */
+        .hidden { display: none !important; }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: rgba(20,20,35,0.95);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 15px 20px;
+            z-index: 5000;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background -->
+    <div class="bg-animation"></div>
+    <div class="stars"></div>
+    
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
+        <div style="margin-top: 20px; color: var(--primary); font-family: 'Orbitron';">Loading...</div>
+    </div>
+    
+    <!-- Login Container -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-logo">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <h1 class="login-title">KAZE ID</h1>
+            <p class="login-subtitle">Professional Dashboard</p>
+            
+            <div class="social-login">
+                <button class="btn-social google" onclick="signInWithGoogle()">
+                    <i class="fab fa-google"></i> Continue with Google
+                </button>
+                <button class="btn-social github" onclick="signInWithGitHub()">
+                    <i class="fab fa-github"></i> Continue with GitHub
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main App -->
+    <div class="main-app hidden" id="mainApp">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>KAZE ID</h1>
+                    <span>PROFESSIONAL DASHBOARD</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notif-badge">10</span>
+                </div>
+                <div class="user-avatar" id="userAvatar">
+                    <i class="fas fa-user" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #7000ff, #00f0ff);"></i>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Saldo Section -->
+        <div class="saldo-section">
+            <div class="saldo-card">
+                <div class="saldo-label">Saldo Utama</div>
+                <div class="saldo-amount" id="userBalance">Rp 0</div>
+                <div class="saldo-bonus">
+                    <i class="fas fa-gift"></i>
+                    <span class="saldo-bonus-text">Saldo Bonus Rp 50,000</span>
+                    <i class="fas fa-chevron-right saldo-bonus-arrow"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Produk Populer -->
+        <div class="produk-populer">
+            <div class="section-title">
+                <h2>Produk Populer</h2>
+                <a href="#" class="see-all">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+            </div>
+            <div class="produk-scroll" id="produkPopulerList">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+        
+        <!-- Kategori Produk -->
+        <div class="kategori-section">
+            <div class="section-title">
+                <h2>Kategori Produk</h2>
+                <a href="#" class="see-all">Lihat Semua <i class="fas fa-chevron-right"></i></a>
+            </div>
+            <div class="kategori-grid" id="kategoriList">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('dashboard', this)">
+                <i class="fas fa-home"></i>
+                <span>DASHBOARD</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('produk', this)">
+                <i class="fas fa-box"></i>
+                <span>PRODUK</span>
+            </div>
+            <div class="nav-item center" onclick="switchTab('produk-unggulan', this)">
+                <div class="nav-icon-box">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <span>PRODUK</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('deposit', this)">
+                <i class="fas fa-wallet"></i>
+                <span>DEPOSIT</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('profil', this)">
+                <i class="fas fa-user"></i>
+                <span>PROFIL</span>
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <div style="color: var(--primary); font-weight: 600; margin-bottom: 5px;" id="toastTitle">Notifikasi</div>
+        <div style="color: #ccc; font-size: 14px;" id="toastMessage">Pesan</div>
+    </div>
+
+    <script>
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCI7RqRQ4MBOI654vfAn0Gc9YhL5nLc2vU",
+            authDomain: "bottele-92220.firebaseapp.com",
+            databaseURL: "https://bottele-92220-default-rtdb.firebaseio.com",
+            projectId: "bottele-92220",
+            storageBucket: "bottele-92220.appspot.com",
+            messagingSenderId: "618675411599",
+            appId: "1:618675411599:web:5915b2cc9fe6dde469eefa"
+        };
+        
+        let app, auth, database, currentUser, userData;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initFirebase();
+            initParticles();
+            renderProdukPopuler();
+            renderKategori();
+        });
+        
+        function initFirebase() {
+            try {
+                app = firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                database = firebase.database();
+                
+                auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+                    .then(() => checkAuthState());
+            } catch (e) {
+                console.error(e);
+            }
+        }
+        
+        function checkAuthState() {
+            auth.onAuthStateChanged(user => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+                if (user) {
+                    currentUser = user;
+                    showDashboard();
+                    loadUserData(user.uid);
+                } else {
+                    showLogin();
+                }
+            });
+        }
+        
+        function showLogin() {
+            document.getElementById('loginContainer').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
+        }
+        
+        function showDashboard() {
+            document.getElementById('loginContainer').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            updateUI();
+        }
+        
+        function loadUserData(uid) {
+            database.ref('users/' + uid).once('value').then(snapshot => {
+                if (snapshot.exists()) {
+                    userData = snapshot.val();
+                } else {
+                    userData = {
+                        uid: uid,
+                        email: currentUser.email,
+                        displayName: currentUser.displayName || 'User',
+                        photoURL: currentUser.photoURL || '',
+                        balance: 0
+                    };
+                    database.ref('users/' + uid).set(userData);
+                }
+                updateUI();
+            });
+        }
+        
+        function updateUI() {
+            if (userData) {
+                document.getElementById('userBalance').textContent = 'Rp ' + formatRupiah(userData.balance || 0);
+                if (userData.photoURL) {
+                    document.getElementById('userAvatar').innerHTML = `<img src="${userData.photoURL}" alt="Avatar">`;
+                }
+            }
+        }
+        
+        function formatRupiah(angka) {
+            return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+        
+        // Auth Functions
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(e => showToast('Error', e.message));
+        }
+        
+        function signInWithGitHub() {
+            const provider = new firebase.auth.GithubAuthProvider();
+            auth.signInWithPopup(provider).catch(e => showToast('Error', e.message));
+        }
+        
+        // Render Produk Populer
+        function renderProdukPopuler() {
+            const produk = [
+                { name: 'APK Premium A', price: 500000, status: 'ready', icon: 'fa-mobile-alt', color: 'purple' },
+                { name: 'APK Premium B', price: 600000, status: 'maintenance', icon: 'fa-mobile', color: 'orange' },
+                { name: 'Panel / VPS', price: 100000, status: 'ready', icon: 'fa-server', color: 'cyan' },
+                { name: 'Canva Pro', price: 25000, status: 'ready', icon: 'fa-palette', color: 'purple' },
+                { name: 'Netflix', price: 45000, status: 'ready', icon: 'fa-film', color: 'orange' }
+            ];
+            
+            const container = document.getElementById('produkPopulerList');
+            container.innerHTML = produk.map((p, i) => `
+                <div class="produk-card ${i === 0 ? 'active' : ''}" onclick="beliProduk('${p.name}')">
+                    <div class="produk-icon ${p.color}">
+                        <i class="fas ${p.icon}"></i>
+                    </div>
+                    <div class="produk-name">${p.name}</div>
+                    <div class="produk-price">Rp ${formatRupiah(p.price)}</div>
+                    <div class="produk-status ${p.status}">
+                        ${p.status === 'ready' ? 'Status: Ready' : 'Maintenance'}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Render Kategori
+        function renderKategori() {
+            const kategori = [
+                { name: 'APK Premium', count: '12 Produk', icon: 'fa-mobile-alt', color: 'blue' },
+                { name: 'Website / Panel', count: '8 Produk', icon: 'fa-globe', color: 'purple' },
+                { name: 'Bot Telegram', count: '5 Produk', icon: 'fa-robot', color: 'cyan' },
+                { name: 'VPS / Hosting', count: '6 Produk', icon: 'fa-gamepad', color: 'pink' }
+            ];
+            
+            const container = document.getElementById('kategoriList');
+            container.innerHTML = kategori.map(k => `
+                <div class="kategori-card" onclick="openKategori('${k.name}')">
+                    <div class="kategori-icon ${k.color}">
+                        <i class="fas ${k.icon}"></i>
+                    </div>
+                    <div class="kategori-info">
+                        <div class="kategori-name">${k.name}</div>
+                        <div class="kategori-count">${k.count}</div>
+                    </div>
+                    <i class="fas fa-chevron-right kategori-arrow"></i>
+                </div>
+            `).join('');
+        }
+        
+        // Actions
+        function beliProduk(nama) {
+            showToast('Info', `Memilih produk: ${nama}`);
+        }
+        
+        function openKategori(nama) {
+            showToast('Info', `Membuka kategori: ${nama}`);
+        }
+        
+        function switchTab(tab, element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            showToast('Tab', `Switched to ${tab}`);
+        }
+        
+        function showToast(title, message) {
+            document.getElementById('toastTitle').textContent = title;
+            document.getElementById('toastMessage').textContent = message;
+            document.getElementById('toast').classList.add('show');
+            setTimeout(() => {
+                document.getElementById('toast').classList.remove('show');
+            }, 3000);
+        }
+        
+        // Particles
+        function initParticles() {
+            // Simple starfield effect handled by CSS
+        }
+    </script>
+</body>
+</html>
