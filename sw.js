@@ -1,262 +1,345 @@
-const CACHE_NAME = 'aether-ai-v1';
+const CACHE_NAME = "aether-ai-v2";
+
 const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap',
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/xml.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js',
-    'https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js',
-    'https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js'
+    "/",
+    "/index.html"
 ];
 
-const ICON_URL = 'https://files.catbox.moe/quklhs.png';
-const BADGE_URL = 'https://files.catbox.moe/quklhs.png';
+const ICON_URL = "https://files.catbox.moe/quklhs.png";
+const BADGE_URL = "https://files.catbox.moe/quklhs.png";
 
-/* ===== INSTALL ===== */
-self.addEventListener('install', function(event) {
-    console.log('[SW] Install event');
+/* ================= INSTALL ================= */
+self.addEventListener("install", event => {
+    console.log("[SW] Installing...");
+
     event.waitUntil(
-        caches.open(CACHE_NAME).then(function(cache) {
-            console.log('[SW] Caching static assets');
-            return cache.addAll(STATIC_ASSETS);
-        }).then(function() {
-            return self.skipWaiting();
-        }).catch(function(err) {
-            console.log('[SW] Cache failed:', err);
-            return self.skipWaiting();
-        })
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(STATIC_ASSETS))
+            .then(() => self.skipWaiting())
+            .catch(err => {
+                console.error("[SW] Install failed:", err);
+                return self.skipWaiting();
+            })
     );
 });
 
-/* ===== ACTIVATE ===== */
-self.addEventListener('activate', function(event) {
-    console.log('[SW] Activate event');
+/* ================= ACTIVATE ================= */
+self.addEventListener("activate", event => {
+    console.log("[SW] Activated");
+
     event.waitUntil(
-        caches.keys().then(function(cacheNames) {
+        caches.keys().then(cacheNames => {
             return Promise.all(
-                cacheNames.map(function(cacheName) {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('[SW] Deleting old cache:', cacheName);
-                        return caches.delete(cacheName);
+                cacheNames.map(cache => {
+                    if (cache !== CACHE_NAME) {
+                        return caches.delete(cache);
                     }
                 })
             );
-        }).then(function() {
-            return self.clients.claim();
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
-/* ===== FETCH ===== */
-self.addEventListener('fetch', function(event) {
-    var request = event.request;
-    var url = new URL(request.url);
+/* ================= FETCH ================= */
+self.addEventListener("fetch", event => {
 
-    // Skip non-GET requests
-    if (request.method !== 'GET') {
+    const request = event.request;
+
+    if (request.method !== "GET") {
         return;
     }
 
-    // Skip API calls (network only)
-    if (url.hostname.indexOf('api.synoxcloud.xyz') !== -1) {
+    const url = new URL(request.url);
+
+    /* Jangan cache API */
+    if (
+        url.hostname.includes("api.synoxcloud.xyz") ||
+        url.hostname.includes("api.aether.ai")
+    ) {
         return;
     }
 
-    // Skip analytics / tracking
-    if (url.hostname.indexOf('google-analytics') !== -1 ||
-        url.hostname.indexOf('googletagmanager') !== -1) {
+    /* Jangan cache analytics */
+    if (
+        url.hostname.includes("google-analytics") ||
+        url.hostname.includes("googletagmanager")
+    ) {
         return;
     }
 
     event.respondWith(
-        caches.match(request).then(function(cachedResponse) {
+        caches.match(request).then(cachedResponse => {
+
             if (cachedResponse) {
-                // Return cached and revalidate in background
-                fetch(request).then(function(networkResponse) {
-                    if (networkResponse && networkResponse.status === 200) {
-                        caches.open(CACHE_NAME).then(function(cache) {
-                            cache.put(request, networkResponse.clone());
-                        });
-                    }
-                }).catch(function() {});
+
+                fetch(request)
+                    .then(networkResponse => {
+
+                        if (
+                            networkResponse &&
+                            networkResponse.status === 200
+                        ) {
+                            caches.open(CACHE_NAME)
+                                .then(cache => {
+                                    cache.put(
+                                        request,
+                                        networkResponse.clone()
+                                    );
+                                });
+                        }
+                    })
+                    .catch(() => {});
+
                 return cachedResponse;
             }
 
-            // Network first, fallback cache
-            return fetch(request).then(function(networkResponse) {
-                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+            return fetch(request)
+                .then(networkResponse => {
+
+                    if (
+                        networkResponse &&
+                        networkResponse.status === 200
+                    ) {
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                cache.put(
+                                    request,
+                                    networkResponse.clone()
+                                );
+                            });
+                    }
+
                     return networkResponse;
-                }
-                var responseClone = networkResponse.clone();
-                caches.open(CACHE_NAME).then(function(cache) {
-                    cache.put(request, responseClone);
+                })
+                .catch(() => {
+
+                    if (
+                        request.headers.get("accept") &&
+                        request.headers.get("accept")
+                            .includes("text/html")
+                    ) {
+                        return caches.match("/index.html");
+                    }
+
+                    return new Response(
+                        "Offline - No cache available",
+                        {
+                            status: 503,
+                            headers: {
+                                "Content-Type": "text/plain"
+                            }
+                        }
+                    );
                 });
-                return networkResponse;
-            }).catch(function() {
-                // Fallback for HTML
-                if (request.headers.get('accept') && request.headers.get('accept').indexOf('text/html') !== -1) {
-                    return caches.match('/index.html');
-                }
-                return new Response('Offline - No cache available', {
-                    status: 503,
-                    statusText: 'Service Unavailable',
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-            });
         })
     );
 });
 
-/* ===== PUSH NOTIFICATION ===== */
-self.addEventListener('push', function(event) {
-    console.log('[SW] Push event received');
-    var data = {};
+/* ================= PUSH ================= */
+self.addEventListener("push", event => {
+
+    let data = {};
+
     try {
         data = event.data ? event.data.json() : {};
     } catch (e) {
         data = {};
     }
 
-    var title = data.title || 'AETHER AI';
-    var body = data.body || 'Ada notifikasi baru dari AETHER AI!';
-    var tag = data.tag || 'aether-ai-' + Date.now();
-    var url = data.url || '/';
+    const title = data.title || "AETHER AI";
 
-    var options = {
-        body: body,
+    const options = {
+        body:
+            data.body ||
+            "Ada notifikasi baru dari AETHER AI.",
         icon: data.icon || ICON_URL,
         badge: data.badge || BADGE_URL,
-        tag: tag,
-        requireInteraction: data.requireInteraction || false,
+        tag: data.tag || "aether-" + Date.now(),
+        requireInteraction:
+            data.requireInteraction || false,
         silent: data.silent || false,
         vibrate: data.vibrate || [200, 100, 200],
         data: {
-            url: url,
+            url: data.url || "/",
             timestamp: Date.now()
         },
         actions: data.actions || [
             {
-                action: 'open',
-                title: 'Buka Aplikasi'
+                action: "open",
+                title: "Buka"
             },
             {
-                action: 'dismiss',
-                title: 'Tutup'
+                action: "dismiss",
+                title: "Tutup"
             }
         ]
     };
 
     event.waitUntil(
-        self.registration.showNotification(title, options)
+        self.registration.showNotification(
+            title,
+            options
+        )
     );
 });
 
-/* ===== NOTIFICATION CLICK ===== */
-self.addEventListener('notificationclick', function(event) {
-    console.log('[SW] Notification click:', event.action);
-    var notification = event.notification;
-    var data = notification.data || {};
-    var url = data.url || '/';
+/* ================= CLICK ================= */
+self.addEventListener(
+    "notificationclick",
+    event => {
 
-    notification.close();
+        event.notification.close();
 
-    if (event.action === 'dismiss') {
-        return;
-    }
+        if (event.action === "dismiss") {
+            return;
+        }
 
-    event.waitUntil(
-        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
-            // Focus existing client
-            for (var i = 0; i < clientList.length; i++) {
-                var client = clientList[i];
-                if (client.url.indexOf(url) !== -1 && 'focus' in client) {
-                    return client.focus();
-                }
-            }
-            // Open new window
-            if (self.clients.openWindow) {
-                return self.clients.openWindow(url);
-            }
-        })
-    );
-});
+        const url =
+            event.notification.data?.url || "/";
 
-/* ===== NOTIFICATION CLOSE ===== */
-self.addEventListener('notificationclose', function(event) {
-    console.log('[SW] Notification closed');
-});
-
-/* ===== MESSAGE FROM CLIENT ===== */
-self.addEventListener('message', function(event) {
-    console.log('[SW] Message from client:', event.data);
-    var data = event.data || {};
-
-    if (data.type === 'SHOW_NOTIFICATION') {
-        var title = data.title || 'AETHER AI';
-        var body = data.body || 'Notifikasi baru';
-        var options = {
-            body: body,
-            icon: data.icon || ICON_URL,
-            badge: data.badge || BADGE_URL,
-            tag: data.tag || 'aether-ai-msg-' + Date.now(),
-            requireInteraction: false,
-            vibrate: [100, 50, 100],
-            data: {
-                url: data.url || '/',
-                timestamp: Date.now()
-            }
-        };
         event.waitUntil(
-            self.registration.showNotification(title, options)
+            clients.matchAll({
+                type: "window",
+                includeUncontrolled: true
+            }).then(clientList => {
+
+                for (const client of clientList) {
+                    if ("focus" in client) {
+                        return client.focus();
+                    }
+                }
+
+                if (clients.openWindow) {
+                    return clients.openWindow(url);
+                }
+            })
         );
     }
+);
 
-    if (data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
+/* ================= CLOSE ================= */
+self.addEventListener(
+    "notificationclose",
+    () => {
+        console.log(
+            "[SW] Notification closed"
+        );
     }
+);
 
-    if (data.type === 'GET_VERSION') {
-        if (event.source && event.source.postMessage) {
+/* ================= MESSAGE ================= */
+self.addEventListener(
+    "message",
+    event => {
+
+        const data = event.data || {};
+
+        if (data.type === "SHOW_NOTIFICATION") {
+
+            event.waitUntil(
+                self.registration.showNotification(
+                    data.title || "AETHER AI",
+                    {
+                        body:
+                            data.body ||
+                            "Notifikasi baru.",
+                        icon:
+                            data.icon ||
+                            ICON_URL,
+                        badge:
+                            data.badge ||
+                            BADGE_URL,
+                        tag:
+                            data.tag ||
+                            "msg-" +
+                            Date.now(),
+                        vibrate: [
+                            100,
+                            50,
+                            100
+                        ],
+                        data: {
+                            url:
+                                data.url ||
+                                "/"
+                        }
+                    }
+                )
+            );
+        }
+
+        if (
+            data.type === "SKIP_WAITING"
+        ) {
+            self.skipWaiting();
+        }
+
+        if (
+            data.type === "GET_VERSION" &&
+            event.source
+        ) {
             event.source.postMessage({
-                type: 'VERSION',
+                type: "VERSION",
                 version: CACHE_NAME
             });
         }
     }
-});
+);
 
-/* ===== SYNC (Background Sync) ===== */
-self.addEventListener('sync', function(event) {
-    console.log('[SW] Sync event:', event.tag);
-    if (event.tag === 'aether-sync') {
-        event.waitUntil(
-            self.clients.matchAll().then(function(clients) {
-                clients.forEach(function(client) {
-                    client.postMessage({ type: 'SYNC_COMPLETE' });
-                });
-            })
-        );
-    }
-});
+/* ================= SYNC ================= */
+self.addEventListener(
+    "sync",
+    event => {
 
-/* ===== PERIODIC SYNC ===== */
-self.addEventListener('periodicsync', function(event) {
-    console.log('[SW] Periodic sync:', event.tag);
-    if (event.tag === 'aether-periodic') {
-        event.waitUntil(
-            self.registration.showNotification('AETHER AI', {
-                body: 'AETHER AI aktif di background',
-                icon: ICON_URL,
-                badge: BADGE_URL,
-                tag: 'aether-periodic-' + Date.now(),
-                requireInteraction: false
-            })
-        );
+        if (
+            event.tag === "aether-sync"
+        ) {
+            event.waitUntil(
+                self.clients
+                    .matchAll()
+                    .then(clients => {
+
+                        clients.forEach(
+                            client => {
+                                client.postMessage(
+                                    {
+                                        type:
+                                            "SYNC_COMPLETE"
+                                    }
+                                );
+                            }
+                        );
+                    })
+            );
+        }
     }
-});
+);
+
+/* ================= PERIODIC SYNC ================= */
+self.addEventListener(
+    "periodicsync",
+    event => {
+
+        if (
+            event.tag ===
+            "aether-periodic"
+        ) {
+            event.waitUntil(
+                self.registration.showNotification(
+                    "AETHER AI",
+                    {
+                        body:
+                            "AETHER AI aktif di background.",
+                        icon:
+                            ICON_URL,
+                        badge:
+                            BADGE_URL,
+                        tag:
+                            "periodic-" +
+                            Date.now()
+                    }
+                )
+            );
+        }
+    }
+);
