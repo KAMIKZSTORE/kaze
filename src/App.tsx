@@ -10,6 +10,7 @@ function App() {
   const [file, setFile] = useState<File | null>(null)
   const [media, setMedia] = useState<MediaInfo | null>(null)
   const [busy, setBusy] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
@@ -63,13 +64,39 @@ function App() {
   async function upload() {
     if (!file) return
     setBusy(true)
+    setUploadProgress(0)
     setError('')
     const body = new FormData()
     body.append('file', file)
     try {
-      const response = await fetch('/api/upload', { method: 'POST', body })
-      const result = await response.json() as { error?: string; code?: string }
-      if (!response.ok || !result.code) throw new Error(result.error || 'Unggah gagal. Coba lagi.')
+      const result = await new Promise<{ error?: string; code: string }>((resolve, reject) => {
+        const request = new XMLHttpRequest()
+        request.open('POST', '/api/upload')
+        request.timeout = 10 * 60 * 1000
+        request.upload.onprogress = (event) => {
+          if (event.lengthComputable) setUploadProgress(Math.round((event.loaded / event.total) * 100))
+        }
+        request.upload.onload = () => setUploadProgress(100)
+        request.onload = () => {
+          let response: { error?: string; code?: string }
+          try {
+            response = JSON.parse(request.responseText) as { error?: string; code?: string }
+          } catch {
+            reject(new Error('Respons server tidak valid. Coba lagi.'))
+            return
+          }
+          const code = response.code
+          if (request.status < 200 || request.status >= 300 || !code) {
+            reject(new Error(response.error || 'Unggah gagal. Coba lagi.'))
+            return
+          }
+          resolve({ code, error: response.error })
+        }
+        request.onerror = () => reject(new Error('Koneksi terputus saat mengunggah. Periksa internet lalu coba lagi.'))
+        request.ontimeout = () => reject(new Error('Unggah melewati batas waktu 10 menit. Coba lagi dengan koneksi lebih stabil.'))
+        request.onabort = () => reject(new Error('Unggah dibatalkan.'))
+        request.send(body)
+      })
       window.history.pushState({}, '', `/${result.code}`)
       setMediaCode(result.code)
       setFile(null)
@@ -77,6 +104,7 @@ function App() {
       setError(uploadError instanceof Error ? uploadError.message : 'Unggah gagal. Coba lagi.')
     } finally {
       setBusy(false)
+      setUploadProgress(0)
     }
   }
 
@@ -117,7 +145,7 @@ function App() {
       </div>
       {file && <div className="selected-file"><span className="file-name">{file.name}<small>{(file.size / (1024 * 1024)).toFixed(1)} MB</small></span><button className="icon-button" onClick={() => setFile(null)} aria-label="Hapus file"><X size={18} /></button></div>}
       {error && <p className="error-message" role="alert">{error}</p>}
-      {file && <button className="upload-button" onClick={upload} disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> Mengunggah...</> : <><CloudUpload size={17} /> Unggah & buat tautan</>}</button>}
+      {file && <button className="upload-button" onClick={upload} disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> {uploadProgress === 100 ? 'Menyimpan...' : `Mengunggah ${uploadProgress}%...`}</> : <><CloudUpload size={17} /> Unggah & buat tautan</>}</button>}
       {media && <div className="result">
         <div className="result-title"><Check size={17} /> Tautan siap dibagikan</div>
         <div className="link-field"><a href={`/${media.code}`} target="_blank" rel="noreferrer">{window.location.origin}/{media.code}</a><button onClick={() => copyLink(`${window.location.origin}/${media.code}`)} aria-label="Salin tautan">{copied ? <Check size={17} /> : <Clipboard size={17} />}</button></div>
