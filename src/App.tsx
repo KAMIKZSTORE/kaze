@@ -152,6 +152,17 @@ function App() {
         <a className="open-link" href={`/${media.code}`} target="_blank" rel="noreferrer">Buka media <span>↗</span></a>
       </div>}
     </section>
+    <section className="about-section" aria-labelledby="about-title">
+      <div className="about-copy">
+        <h2 id="about-title">Tentang KAZE99 ID</h2>
+        <p>Bagikan gambar dan video dengan mudah melalui satu tautan.</p>
+      </div>
+      <nav className="about-links" aria-label="Kontak dan media sosial">
+        <a href="https://t.me/kazex_cs" target="_blank" rel="noreferrer"><span>Telegram</span><strong>@kazex_cs</strong></a>
+        <a href="https://wa.me/22394747449" target="_blank" rel="noreferrer"><span>WhatsApp</span><strong>+223 94 74 74 49</strong></a>
+        <a href="https://www.tiktok.com/@dikx_kz" target="_blank" rel="noreferrer"><span>TikTok</span><strong>@dikx_kz</strong></a>
+      </nav>
+    </section>
     <footer><span>KAZE99 ID</span><span>File hingga 400 MB. Jangan unggah file sensitif.</span></footer>
   </main>
 }
