@@ -3,7 +3,7 @@ import { ArrowLeft, Check, Clipboard, CloudUpload, FileImage, Film, LoaderCircle
 
 type MediaInfo = { code: string; mimetype: string; url: string }
 
-const maximumSize = 100 * 1024 * 1024
+const maximumSize = 400 * 1024 * 1024
 
 function App() {
   const fileInput = useRef<HTMLInputElement>(null)
@@ -54,7 +54,7 @@ function App() {
       return
     }
     if (selected.size > maximumSize) {
-      setError('Ukuran file maksimal 100 MB.')
+      setError('Ukuran file maksimal 400 MB.')
       return
     }
     setFile(selected)
@@ -113,7 +113,7 @@ function App() {
         <strong>Tarik file ke sini</strong>
         <span className="drop-note">atau pilih dari perangkat</span>
         <button className="choose-button" onClick={() => fileInput.current?.click()}>Pilih file <span>↗</span></button>
-        <div className="format-note"><span><Film size={13} /> VIDEO</span><span><FileImage size={13} /> GAMBAR</span><i /> MAKS. 100 MB</div>
+        <div className="format-note"><span><Film size={13} /> VIDEO</span><span><FileImage size={13} /> GAMBAR</span><i /> MAKS. 400 MB</div>
       </div>
       {file && <div className="selected-file"><span className="file-name">{file.name}<small>{(file.size / (1024 * 1024)).toFixed(1)} MB</small></span><button className="icon-button" onClick={() => setFile(null)} aria-label="Hapus file"><X size={18} /></button></div>}
       {error && <p className="error-message" role="alert">{error}</p>}
@@ -124,7 +124,7 @@ function App() {
         <a className="open-link" href={`/${media.code}`} target="_blank" rel="noreferrer">Buka media <span>↗</span></a>
       </div>}
     </section>
-    <footer><span>KAZE99 ID</span><span>File dibagikan lewat link publik. Jangan unggah file sensitif.</span></footer>
+    <footer><span>KAZE99 ID</span><span>File hingga 400 MB. Jangan unggah file sensitif.</span></footer>
   </main>
 }
 

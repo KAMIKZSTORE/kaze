@@ -127,7 +127,7 @@ const storage = multer.diskStorage({
 })
 const upload = multer({
   storage,
-  limits: { fileSize: 100 * 1024 * 1024, files: 1 },
+  limits: { fileSize: 400 * 1024 * 1024, files: 1 },
 })
 
 let recordWriteQueue = Promise.resolve()
@@ -173,8 +173,11 @@ app.post('/api/upload', limitUploadRate, upload.single('file'), async (request, 
 })
 
 app.use(express.static(path.resolve('dist')))
-app.get('/_preview.svg', (_request, response) => {
-  response.type('image/svg+xml').set('Cache-Control', 'public, max-age=86400').send('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630"><rect width="1200" height="630" fill="#f7f7f4"/><path d="M0 470h1200" stroke="#dcded6"/><rect x="94" y="88" width="1012" height="374" rx="14" fill="#20221e"/><circle cx="600" cy="275" r="68" fill="#bbf260"/><path d="m585 237 48 38-48 38z" fill="#20221e"/><text x="96" y="548" fill="#20221e" font-family="Arial,sans-serif" font-size="42" font-weight="700">KAZE99 ID</text><text x="1098" y="548" text-anchor="end" fill="#777a72" font-family="Arial,sans-serif" font-size="22">MEDIA, LANGSUNG JADI LINK</text></svg>')
+app.get('/preview-banner.png', (_request, response, next) => {
+  response.setHeader('Cache-Control', 'public, max-age=86400')
+  response.sendFile(path.resolve('src/hjk.png'), (error) => {
+    if (error) next(error)
+  })
 })
 
 app.get('/api/media/:code', async (request, response, next) => {
@@ -250,7 +253,7 @@ app.get('/:code', async (request, response, next) => {
     }
     const origin = new URL(`${request.protocol}://${host}`).origin
     const mediaUrl = `${origin}/_media/${normalizeCode(request.params.code)}`
-    const shareImageUrl = mimetype.startsWith('image/') ? mediaUrl : `${origin}/_preview.svg`
+    const shareImageUrl = `${origin}/preview-banner.png`
     const pageUrl = `${origin}/${normalizeCode(request.params.code)}`
     const escapedPageUrl = escapeHtml(pageUrl)
     const escapedImageUrl = escapeHtml(shareImageUrl)
@@ -258,7 +261,7 @@ app.get('/:code', async (request, response, next) => {
     const videoMetadata = mimetype.startsWith('video/')
       ? `<meta property="og:video" content="${escapedMediaUrl}"><meta property="og:video:secure_url" content="${escapedMediaUrl}"><meta property="og:video:type" content="${mimetype}"><meta property="og:video:width" content="1280"><meta property="og:video:height" content="720">`
       : ''
-    const imageType = mimetype.startsWith('video/') ? 'image/svg+xml' : mimetype
+    const imageType = 'image/png'
     const previewMetadata = `<meta name="description" content="Lihat media yang dibagikan melalui KAZE99 ID."><meta property="og:site_name" content="KAZE99 ID"><meta property="og:title" content="Media dibagikan | KAZE99 ID"><meta property="og:description" content="Lihat media yang dibagikan melalui KAZE99 ID."><meta property="og:type" content="${mimetype.startsWith('video/') ? 'video.other' : 'website'}"><meta property="og:url" content="${escapedPageUrl}"><meta property="og:image" content="${escapedImageUrl}"><meta property="og:image:secure_url" content="${escapedImageUrl}"><meta property="og:image:type" content="${imageType}"><meta property="og:image:alt" content="Media dibagikan dari KAZE99 ID"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Media dibagikan | KAZE99 ID"><meta name="twitter:description" content="Lihat media yang dibagikan melalui KAZE99 ID."><meta name="twitter:image" content="${escapedImageUrl}">${videoMetadata}`
     const indexHtml = await fs.readFile(path.resolve('dist/index.html'), 'utf8')
     response.setHeader('Cache-Control', 'public, max-age=300')
@@ -272,7 +275,7 @@ app.use((_request, response) => response.status(404).json({ error: 'Tidak ditemu
 
 app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
   if (error instanceof multer.MulterError && error.code === 'LIMIT_FILE_SIZE') {
-    response.status(413).json({ error: 'Ukuran file maksimal 100 MB.' })
+    response.status(413).json({ error: 'Ukuran file maksimal 400 MB.' })
     return
   }
   console.error('Request failed:', error)
